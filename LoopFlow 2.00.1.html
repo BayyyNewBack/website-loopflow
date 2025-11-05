@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOOPFLOW V2</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif;}
+    body{overflow:hidden;height:100vh;display:flex;justify-content:center;align-items:center;color:#ffffff;background:#1a0033;}
+    video#bg-video{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-2;}
+    audio#bg-sound{display:none;}
+    
+    /* Login Container */
+    .login-container{background:rgba(26,0,51,0.9);border:2px solid #7b2cbf;border-radius:15px;padding:30px;width:320px;text-align:center;box-shadow:0 0 30px #7b2cbf88;z-index:2;position:relative;}
+    .login-container h1{font-size:22px;margin-bottom:20px;color:#ffffff;text-shadow:0 0 15px #7b2cbf;}
+    .login-container p{font-size:12px;color:#ffffffcc;margin-bottom:20px;}
+    .login-avatar{width:100px;height:100px;border-radius:50%;margin:0 auto 20px;display:block;border:2px solid #7b2cbf;}
+    .input-group{text-align:left;margin-bottom:15px;}
+    .input-group label{display:block;color:#ffffff;font-size:12px;margin-bottom:5px;}
+    .input-group input{width:100%;padding:8px;border:1px solid #7b2cbf;border-radius:5px;background:rgba(0,0,0,0.3);color:#ffffff;outline:none;}
+    .login-btn{background:linear-gradient(90deg,#7b2cbf,#9d4edd);border:none;padding:10px 20px;width:100%;border-radius:8px;font-weight:bold;cursor:pointer;color:#ffffff;transition:.2s;}
+    .login-btn:hover{transform:scale(1.05);box-shadow:0 0 20px #7b2cbfaa;}
+    .error{color:#ff6666;font-size:12px;margin-top:10px;}
+    .watermark{position:absolute;bottom:10px;right:15px;color:#ffffff80;font-size:12px;}
+    
+    /* Home Container */
+    .home-container{display:none;background:rgba(26,0,51,0.9);border:2px solid #7b2cbf;border-radius:20px;width:340px;text-align:center;padding:25px;box-shadow:0 0 30px #7b2cbf77;z-index:2;position:relative;overflow:hidden;}
+    .home-header{position:relative;height:120px;margin-bottom:20px;border-radius:10px;overflow:hidden;}
+    .home-header img{width:100%;height:100%;object-fit:cover;}
+    .beta-badge{position:absolute;top:10px;left:10px;background:rgba(255,50,50,0.8);color:#fff;padding:3px 8px;border-radius:5px;font-size:12px;font-weight:bold;display:flex;align-items:center;}
+    .beta-badge::before{content:"🔥";margin-right:5px;}
+    .beta-text{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.7);color:#fff;padding:5px 10px;border-radius:5px;font-size:12px;}
+    
+    /* Animated Loopflow Text */
+    .loopflow-container{margin:20px 0;position:relative;height:80px;display:flex;align-items:center;justify-content:center;}
+    .loopflow-text{font-size:36px;font-weight:900;color:#ffffff;text-shadow:0 0 10px #7b2cbf, 0 0 20px #7b2cbf, 0 0 30px #7b2cbf;animation:pulse 2s infinite alternate;letter-spacing:2px;}
+    @keyframes pulse{
+      0%{transform:scale(1);opacity:0.8;}
+      100%{transform:scale(1.05);opacity:1;text-shadow:0 0 15px #7b2cbf, 0 0 25px #7b2cbf, 0 0 35px #7b2cbf;}
+    }
+    
+    .telegram-box{background:rgba(123,44,191,0.5);border:1px solid #7b2cbf;border-radius:10px;padding:15px;margin-bottom:20px;}
+    .telegram-box p{color:#fff;font-size:14px;margin-bottom:10px;}
+    .telegram-btn{background:linear-gradient(90deg,#0088ff,#00ccff);border:none;padding:8px 15px;border-radius:8px;font-weight:bold;cursor:pointer;color:#fff;width:100%;transition:.2s;}
+    .telegram-btn:hover{transform:scale(1.05);box-shadow:0 0 15px #0088ffaa;}
+    .stats-container{display:flex;justify-content:space-between;margin-bottom:20px;}
+    .stat-box{background:rgba(0,0,0,0.3);border:1px solid #7b2cbf;border-radius:10px;padding:15px;width:48%;text-align:left;}
+    .stat-title{color:#7b2cbf;font-size:12px;margin-bottom:5px;}
+    .stat-value{color:#fff;font-size:18px;font-weight:bold;}
+    .home-watermark{position:absolute;bottom:10px;right:15px;color:#ffffff80;font-size:12px;}
+    
+    /* Bug Container */
+    .bug-container{display:none;background:rgba(26,0,51,0.9);border:2px solid #7b2cbf;border-radius:20px;width:340px;text-align:center;padding:25px;box-shadow:0 0 30px #7b2cbf77;z-index:2;position:relative;}
+    .bug-header{display:flex;flex-direction:column;align-items:center;margin-bottom:20px;}
+    .bug-avatar{width:80px;height:80px;border-radius:50%;margin-bottom:15px;border:2px solid #7b2cbf;}
+    .bug-title{color:#ffffff;font-size:22px;margin-bottom:5px;}
+    .bug-role{color:#9d4edd;font-size:14px;margin-bottom:15px;}
+    .bug-form{text-align:left;}
+    .input-group{margin-bottom:15px;}
+    .input-group label{display:block;color:#ffffff;font-size:12px;margin-bottom:5px;}
+    .input-group input, .input-group select{width:100%;padding:8px;border:1px solid #7b2cbf;border-radius:5px;background:rgba(0,0,0,0.3);color:#ffffff;outline:none;}
+    .send-btn{background:linear-gradient(90deg,#7b2cbf,#9d4edd);border:none;padding:12px 20px;width:100%;border-radius:8px;font-weight:bold;cursor:pointer;color:#ffffff;margin-top:15px;transition:.2s;}
+    .send-btn:hover{transform:scale(1.05);box-shadow:0 0 20px #7b2cbfaa;}
+    .send-btn:disabled{background:#666;cursor:not-allowed;transform:none;box-shadow:none;}
+    .success-message{color:#00ff88;font-size:12px;margin-top:10px;display:none;}
+    .cooldown-text{color:#ff6666;font-size:12px;margin-top:8px;}
+    .bug-watermark{position:absolute;bottom:10px;right:15px;color:#ffffff80;font-size:12px;}
+    
+    /* Halaman Pembelian */
+    .purchase-container{display:none;background:rgba(26,0,51,0.9);border:2px solid #7b2cbf;border-radius:20px;width:340px;text-align:center;padding:25px;box-shadow:0 0 30px #7b2cbf77;z-index:2;position:relative;}
+    .purchase-header{display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+    .purchase-header img{width:40px;height:40px;margin-right:10px;}
+    .purchase-header h2{color:#ffffff;font-size:20px;text-shadow:0 0 15px #7b2cbf;}
+    .package-list{margin-top:15px;text-align:left;max-height:400px;overflow-y:auto;padding-right:10px;}
+    .package-list::-webkit-scrollbar{width:6px;}
+    .package-list::-webkit-scrollbar-track{background:rgba(0,0,0,0.3);border-radius:3px;}
+    .package-list::-webkit-scrollbar-thumb{background:#7b2cbf;border-radius:3px;}
+    .package-item{background:rgba(0,0,0,0.3);border:1px solid #7b2cbf;border-radius:10px;padding:15px;margin-bottom:15px;}
+    .package-title{font-size:16px;color:#ffffff;font-weight:bold;margin-bottom:5px;}
+    .package-price{font-size:18px;color:#9d4edd;font-weight:bold;margin-bottom:8px;}
+    .package-benefits{font-size:12px;color:#ffffff;margin-bottom:10px;}
+    .package-benefits ul{list-style:disc;margin-left:20px;}
+    .package-badge{display:inline-block;background:linear-gradient(90deg,#7b2cbf,#9d4edd);color:#fff;font-size:10px;font-weight:bold;padding:3px 8px;border-radius:5px;margin-bottom:5px;}
+    .package-description{font-size:11px;color:#ffcc00;margin-top:10px;margin-bottom:10px;text-align:center;line-height:1.4;}
+    .buy-btn{background:linear-gradient(90deg,#7b2cbf,#9d4edd);border:none;padding:8px 15px;border-radius:8px;font-weight:bold;cursor:pointer;color:#fff;width:100%;margin-top:5px;transition:.2s;}
+    .buy-btn:hover{transform:scale(1.05);box-shadow:0 0 15px #7b2cbfaa;}
+    
+    /* Create Account Container */
+    .create-container{display:none;background:rgba(26,0,51,0.9);border:2px solid #7b2cbf;border-radius:20px;width:340px;text-align:center;padding:25px;box-shadow:0 0 30px #7b2cbf77;z-index:2;position:relative;}
+    .create-header{display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+    .create-header img{width:40px;height:40px;margin-right:10px;}
+    .create-header h2{color:#ffffff;font-size:20px;text-shadow:0 0 15px #7b2cbf;}
+    .create-form{text-align:left;}
+    .create-btn{background:linear-gradient(90deg,#7b2cbf,#9d4edd);border:none;padding:12px 20px;width:100%;border-radius:8px;font-weight:bold;cursor:pointer;color:#ffffff;margin-top:15px;transition:.2s;}
+    .create-btn:hover{transform:scale(1.05);box-shadow:0 0 20px #7b2cbfaa;}
+    .create-success{color:#00ff88;font-size:12px;margin-top:10px;display:none;}
+    .create-watermark{position:absolute;bottom:10px;right:15px;color:#ffffff80;font-size:12px;}
+    
+    /* popup peraturan */
+    .rules-popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:99;justify-content:center;align-items:center;}
+    .rules-box{background:rgba(26,0,51,0.9);border:2px solid #7b2cbf;border-radius:15px;width:320px;max-width:90%;padding:20px;text-align:left;box-shadow:0 0 30px #7b2cbf88;color:#ffffff;}
+    .rules-box h3{text-align:center;margin-bottom:10px;color:#9d4edd;text-shadow:0 0 10px #7b2cbf;}
+    .rules-box ul{list-style:disc;margin-left:20px;margin-bottom:10px;}
+    .rules-box p{font-size:12px;color:#fff;margin-top:8px;}
+    .close-btn{display:block;margin:10px auto 0 auto;padding:6px 15px;border:none;border-radius:8px;background:linear-gradient(90deg,#7b2cbf,#9d4edd);color:#fff;font-weight:bold;cursor:pointer;}
+    
+    /* Menu Dropdown */
+    .menu-container{position:absolute;top:15px;left:15px;z-index:10;}
+    .menu-btn{background:rgba(123,44,191,0.3);border:1px solid #7b2cbf;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;transition:.3s;}
+    .menu-btn:hover{background:rgba(123,44,191,0.6);}
+    .dropdown-menu{position:absolute;top:50px;left:0;background:rgba(26,0,51,0.95);border:1px solid #7b2cbf;border-radius:10px;width:180px;box-shadow:0 0 15px rgba(123,44,191,0.5);display:none;overflow:hidden;}
+    .dropdown-item{padding:12px 15px;color:#fff;text-align:left;cursor:pointer;transition:.2s;display:flex;align-items:center;}
+    .dropdown-item:hover{background:rgba(123,44,191,0.5);}
+    .dropdown-item-icon{margin-right:10px;font-size:16px;}
+    
+    /* Tombol Home */
+    .home-button-container{margin-top:20px;}
+    .home-button{background:linear-gradient(90deg,#7b2cbf,#9d4edd);border:none;padding:10px 20px;width:100%;border-radius:8px;font-weight:bold;cursor:pointer;color:#ffffff;transition:.2s;display:flex;align-items:center;justify-content:center;}
+    .home-button:hover{transform:scale(1.05);box-shadow:0 0 20px #7b2cbfaa;}
+    .home-button-icon{margin-right:8px;font-size:16px;}
+  </style>
+</head>
+<body>
+
+  <!-- INTRO OVERLAY -->
+  <div id="intro-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:black;display:flex;align-items:center;justify-content:center;z-index:99999;">
+    <video id="intro-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;">
+      <source src="https://files.catbox.moe/df92mn.mp4" type="video/mp4">
+      Browser Anda tidak mendukung video ini.
+    </video>
+    <button id="skip-intro" style="position:absolute;top:20px;right:20px;padding:10px 20px;border:none;background:#9d4edd;color:#fff;border-radius:8px;cursor:pointer;z-index:100000;">Lewati Intro</button>
+  </div>
+
+
+  <video autoplay loop muted id="bg-video">
+    <source src="https://files.catbox.moe/pota4k.mp4" type="video/mp4">
+  </video>
+
+  <audio id="bg-sound" autoplay>
+    <source src="https://files.catbox.moe/plffup.mp4" type="audio/mp4">
+  </audio>
+
+  <!-- LOGIN -->
+  <div class="login-container" id="login-page">
+    <img src="https://files.catbox.moe/sr94k6.png" alt="Login Avatar" class="login-avatar">
+    <h1>Please Log-in To Your Account</h1>
+
+    <div class="input-group">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Masukkan Username">
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Masukkan Password">
+    </div>
+
+    <button class="login-btn" onclick="login()">LOGIN</button>
+    <p class="error" id="error-message"></p>
+    <div class="watermark">BayyyNewBackOffc</div>
+  </div>
+
+  <!-- HOME -->
+  <div class="home-container" id="home-page">
+    <div class="menu-container">
+      <div class="menu-btn" id="menu-btn" onclick="toggleDropdown()">⋮</div>
+      <div class="dropdown-menu" id="dropdown-menu">
+        <div class="dropdown-item" onclick="navigateToHome()">
+          <span class="dropdown-item-icon">🏠</span>
+          <span>Home</span>
+        </div>
+        <div class="dropdown-item" onclick="navigateToPurchase()">
+          <span class="dropdown-item-icon">💰</span>
+          <span>Beli Paket</span>
+        </div>
+        <div class="dropdown-item" onclick="showRules()">
+          <span class="dropdown-item-icon">📜</span>
+          <span>Peraturan</span>
+        </div>
+        <div class="dropdown-item" onclick="navigateToBug()">
+          <span class="dropdown-item-icon">💥</span>
+          <span>Bug WhatsApp</span>
+        </div>
+        <div class="dropdown-item" id="create-account-menu" onclick="navigateToCreate()" style="display:none;">
+          <span class="dropdown-item-icon">👤</span>
+          <span>Create Account</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-header">
+      <img src="https://z-cdn-media.chatglm.cn/files/b397ace7-35d4-4523-9212-d3dc5b585f64_ef69e6da0b86a19f5f63ac183862c95d.png" alt="Server Header">
+      <div class="beta-badge">Original</div>
+      <div class="beta-text">This Apps Server Still On Original.</div>
+    </div>
+
+    <div class="loopflow-container">
+      <div class="loopflow-text">LOOPFLOW</div>
+    </div>
+
+    <div class="telegram-box">
+      <p>WhatsApp Channel: Join To Get More Info!</p>
+      <button class="telegram-btn" onclick="window.open('https://whatsapp.com/channel/0029VbBcW4fFXUubRrSdio0u', '_blank')">Join WhatsApp Channel</button>
+    </div>
+
+    <div class="stats-container">
+      <div class="stat-box">
+        <div class="stat-title">Online Users</div>
+        <div class="stat-value" id="online-user">-</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-title">Active Sender</div>
+        <div class="stat-value">0</div>
+      </div>
+    </div>
+    
+    <div class="home-watermark">BayyyNewBackOffc</div>
+  </div>
+
+  <!-- POPUP PERATURAN -->
+  <div class="rules-popup" id="rules-popup">
+    <div class="rules-box">
+      <h3>📜 Peraturan</h3>
+      <ul>
+        <li>Jeda 40 Menit</li>
+        <li>No Spam</li>
+        <li>No Coba fitur lain</li>
+        <li>No mainin Bot</li>
+        <li>No add ke grub</li>
+        <li>No Spam Bug</li>
+      </ul>
+      <p><b>Disclaimer:</b> Jika pas kirim pesan tidak keluar prosesnya berarti WA kenon / tidak ada panel.</p>
+      <p>Buy Res/mods/PT <br> Pv @BayyyNewBack</p>
+      <button class="close-btn" onclick="closeRules()">Tutup</button>
+    </div>
+  </div>
+
+  <!-- HALAMAN PEMBELIAN -->
+  <div class="purchase-container" id="purchase-page">
+    <div class="menu-container">
+      <div class="menu-btn" id="menu-btn" onclick="toggleDropdown()">⋮</div>
+      <div class="dropdown-menu" id="dropdown-menu">
+        <div class="dropdown-item" onclick="navigateToHome()">
+          <span class="dropdown-item-icon">🏠</span>
+          <span>Home</span>
+        </div>
+        <div class="dropdown-item" onclick="navigateToPurchase()">
+          <span class="dropdown-item-icon">💰</span>
+          <span>Beli Paket</span>
+        </div>
+        <div class="dropdown-item" onclick="showRules()">
+          <span class="dropdown-item-icon">📜</span>
+          <span>Peraturan</span>
+        </div>
+        <div class="dropdown-item" onclick="navigateToBug()">
+          <span class="dropdown-item-icon">💥</span>
+          <span>Bug WhatsApp</span>
+        </div>
+        <div class="dropdown-item" id="create-account-menu" onclick="navigateToCreate()" style="display:none;">
+          <span class="dropdown-item-icon">👤</span>
+          <span>Create Account</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="purchase-header">
+      <img src="https://files.catbox.moe/sr94k6.png" alt="Purchase Icon">
+      <h2>Pembelian Paket</h2>
+    </div>
+
+    <div class="package-list">
+      <div class="package-item">
+        <div class="package-title">Buyer VIP</div>
+        <div class="package-price">15k</div>
+        <div class="package-benefits">
+          <ul>
+            <li>Up free sampai owner pensi</li>
+          </ul>
+        </div>
+        <div class="package-description">
+          Buy?Pv Admin<br>
+          @BayyyNewBack<br>
+          atau Click Tombol ini<br>
+          t.me/BayyyNewBack
+        </div>
+        <button class="buy-btn" onclick="buyPackage('Buyer VIP', 15000)">Beli Sekarang</button>
+      </div>
+
+      <div class="package-item">
+        <div class="package-badge">TERLARIS TERJUAL</div>
+        <div class="package-title">Reseller Apk</div>
+        <div class="package-price">25k</div>
+        <div class="package-benefits">
+          <ul>
+            <li>Bisa Jual Apknya</li>
+            <li>Up free Sampai Owner Pensi</li>
+          </ul>
+        </div>
+        <div class="package-description">
+          Buy?Pv Admin<br>
+          @BayyyNewBack<br>
+          atau Click Tombol ini<br>
+          t.me/BayyyNewBack
+        </div>
+        <button class="buy-btn" onclick="buyPackage('Reseller Apk', 25000)">Beli Sekarang</button>
+      </div>
+
+      <div class="package-item">
+        <div class="package-title">Partner Apk</div>
+        <div class="package-price">30k</div>
+        <div class="package-benefits">
+          <ul>
+            <li>Semua benefit reseller apk</li>
+            <li>Bisa open reseller apk</li>
+          </ul>
+        </div>
+        <div class="package-description">
+          Buy?Pv Admin<br>
+          @BayyyNewBack<br>
+          atau Click Tombol ini<br>
+          t.me/BayyyNewBack
+        </div>
+        <button class="buy-btn" onclick="buyPackage('Partner Apk', 30000)">Beli Sekarang</button>
+      </div>
+
+      <div class="package-item">
+        <div class="package-title">Tangan Kanan Apk</div>
+        <div class="package-price">35k</div>
+        <div class="package-benefits">
+          <ul>
+            <li>Semua benefit partner apk</li>
+            <li>Bisa open partner</li>
+          </ul>
+        </div>
+        <div class="package-description">
+          Buy?Pv Admin<br>
+          @BayyyNewBack<br>
+          atau Click Tombol ini<br>
+          t.me/BayyyNewBack
+        </div>
+        <button class="buy-btn" onclick="buyPackage('Tangan Kanan Apk', 35000)">Beli Sekarang</button>
+      </div>
+
+      <div class="package-item">
+        <div class="package-title">Developer Apk</div>
+        <div class="package-price">38k <span style="text-decoration: line-through; font-size: 14px;">diskon</span></div>
+        <div class="package-benefits">
+          <ul>
+            <li>Semua benefit tangan kanan apk</li>
+            <li>Bisa Open Tangan Kanan</li>
+          </ul>
+        </div>
+        <div class="package-description">
+          Buy?Pv Admin<br>
+          @BayyyNewBack<br>
+          atau Click Tombol ini<br>
+          t.me/BayyyNewBack
+        </div>
+        <button class="buy-btn" onclick="buyPackage('Developer Apk', 38000)">Beli Sekarang</button>
+      </div>
+
+      <div class="package-item">
+        <div class="package-title">Moods Apk</div>
+        <div class="package-price">40k</div>
+        <div class="package-benefits">
+          <ul>
+            <li>Semua benefit developer</li>
+            <li>Bisa open developer</li>
+            <li>Keduluan dapet update</li>
+          </ul>
+        </div>
+        <div class="package-description">
+          Buy?Pv Admin<br>
+          @BayyyNewBack<br>
+          atau Click Tombol ini<br>
+          t.me/BayyyNewBack
+        </div>
+        <button class="buy-btn" onclick="buyPackage('Moods Apk', 40000)">Beli Sekarang</button>
+      </div>
+
+      <div class="package-item">
+        <div class="package-title">Pendamping Owner Apk</div>
+        <div class="package-price">45k</div>
+        <div class="package-benefits">
+          <ul>
+            <li>Semua benefit moods</li>
+            <li>Bisa open mood</li>
+            <li>Free func (jika ada)</li>
+          </ul>
+        </div>
+        <div class="package-description">
+          Buy?Pv Admin<br>
+          @BayyyNewBack<br>
+          atau Click Tombol ini<br>
+          t.me/BayyyNewBack
+        </div>
+        <button class="buy-btn" onclick="buyPackage('Pendamping Owner Apk', 45000)">Beli Sekarang</button>
+      </div>
+    </div>
+
+    <div class="home-button-container">
+      <button class="home-button" onclick="navigateToHome()">
+        <span class="home-button-icon">🏠</span>
+        <span>Kembali ke Home</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CREATE ACCOUNT PAGE -->
+  <div class="create-container" id="create-page">
+    <div class="menu-container">
+      <div class="menu-btn" id="menu-btn" onclick="toggleDropdown()">⋮</div>
+      <div class="dropdown-menu" id="dropdown-menu">
+        <div class="dropdown-item" onclick="navigateToHome()">
+          <span class="dropdown-item-icon">🏠</span>
+          <span>Home</span>
+        </div>
+        <div class="dropdown-item" onclick="navigateToPurchase()">
+          <span class="dropdown-item-icon">💰</span>
+          <span>Beli Paket</span>
+        </div>
+        <div class="dropdown-item" onclick="showRules()">
+          <span class="dropdown-item-icon">📜</span>
+          <span>Peraturan</span>
+        </div>
+        <div class="dropdown-item" onclick="navigateToBug()">
+          <span class="dropdown-item-icon">💥</span>
+          <span>Bug WhatsApp</span>
+        </div>
+        <div class="dropdown-item" id="create-account-menu" onclick="navigateToCreate()" style="display:none;">
+          <span class="dropdown-item-icon">👤</span>
+          <span>Create Account</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="create-header">
+      <img src="https://files.catbox.moe/sr94k6.png" alt="Create Account Icon">
+      <h2>Create Account</h2>
+    </div>
+
+    <div class="create-form">
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="new-username" placeholder="Masukkan Username">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="new-password" placeholder="Masukkan Password">
+      </div>
+      <div class="input-group">
+        <label>Pilih Role</label>
+        <select id="new-role">
+          <option value="">-- Pilih Role --</option>
+          <option value="buyer">Buyer</option>
+          <option value="partner">Partner</option>
+          <option value="reseller">Reseller</option>
+          <option value="tk">Tangan Kanan (TK)</option>
+          <option value="developer">Developer</option>
+          <option value="buyer-vip">Buyer VIP</option>
+          <option value="buyer-biasa">Buyer Biasa</option>
+          <option value="moods">Moods</option>
+          <option value="pendamping-owner">Pendamping Owner</option>
+        </select>
+      </div>
+      <button class="create-btn" onclick="createAccount()">CREATE ACCOUNT</button>
+      <p class="create-success" id="create-success">Akun berhasil dibuat!</p>
+    </div>
+
+    <div class="home-button-container">
+      <button class="home-button" onclick="navigateToHome()">
+        <span class="home-button-icon">🏠</span>
+        <span>Kembali ke Home</span>
+      </button>
+    </div>
+    
+    <div class="create-watermark">BayyyNewBackOffc</div>
+  </div>
+
+  <!-- BUG PAGE -->
+  <div class="bug-container" id="bug-page">
+    <div class="menu-container">
+      <div class="menu-btn" id="menu-btn" onclick="toggleDropdown()">⋮</div>
+      <div class="dropdown-menu" id="dropdown-menu">
+        <div class="dropdown-item" onclick="navigateToHome()">
+          <span class="dropdown-item-icon">🏠</span>
+          <span>Home</span>
+        </div>
+        <div class="dropdown-item" onclick="navigateToPurchase()">
+          <span class="dropdown-item-icon">💰</span>
+          <span>Beli Paket</span>
+        </div>
+        <div class="dropdown-item" onclick="showRules()">
+          <span class="dropdown-item-icon">📜</span>
+          <span>Peraturan</span>
+        </div>
+        <div class="dropdown-item" onclick="navigateToBug()">
+          <span class="dropdown-item-icon">💥</span>
+          <span>Bug WhatsApp</span>
+        </div>
+        <div class="dropdown-item" id="create-account-menu" onclick="navigateToCreate()" style="display:none;">
+          <span class="dropdown-item-icon">👤</span>
+          <span>Create Account</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bug-header">
+      <img src="https://files.catbox.moe/sr94k6.png" alt="Bug Avatar" class="bug-avatar">
+      <h2 class="bug-title">LoopFlow V2</h2>
+      <div class="bug-role" id="user-role">Role: - · Exp: 2028 - 05 - 22</div>
+    </div>
+
+    <div class="bug-form">
+      <div class="input-group">
+        <label>Target Number</label>
+        <input type="text" id="target-number" placeholder="e.g. +62xxxxxxxxxx">
+      </div>
+      <div class="input-group">
+        <label>Select Bug</label>
+        <select id="bug-type">
+          <option value="">-- Pilih Bug --</option>
+          <option value="crash-infinity">Crash Infinity</option>
+          <option value="delay-invisible">Delay Invisible</option>
+          <option value="ios-crash">IOS Crash</option>
+        </select>
+      </div>
+      <button class="send-btn" id="send-bug-btn" onclick="sendBug()">SEND BUG</button>
+      <p class="success-message" id="success-message">Mempersiapkan pesan WhatsApp...</p>
+      <p class="cooldown-text" id="cooldown-text"></p>
+    </div>
+
+    <div class="home-button-container">
+      <button class="home-button" onclick="navigateToHome()">
+        <span class="home-button-icon">🏠</span>
+        <span>Kembali ke Home</span>
+      </button>
+    </div>
+    
+    <div class="bug-watermark">BayyyNewBackOffc</div>
+  </div>
+
+  <script>
+    // Default users
+    const defaultUsers = {
+      "bay": "bay123",
+      "buyer": "buyer123",
+      "admin": "admin123"
+    };
+    
+    // Initialize users from localStorage or use default users
+    let validUsers = JSON.parse(localStorage.getItem('appUsers')) || defaultUsers;
+    
+    // If localStorage is empty, save default users
+    if (!localStorage.getItem('appUsers')) {
+      localStorage.setItem('appUsers', JSON.stringify(validUsers));
+    }
+    
+    let currentUser = "";
+
+    function login(){
+      const user=document.getElementById("username").value.trim();
+      const pass=document.getElementById("password").value.trim();
+      const error=document.getElementById("error-message");
+      
+      if(user in validUsers && validUsers[user]===pass){
+        currentUser = user;
+        document.getElementById("login-page").style.display="none";
+        document.getElementById("home-page").style.display="block";
+        
+        // Update online user based on login
+        document.getElementById("online-user").textContent = user;
+        
+        // Update role on bug page
+        updateRole(user);
+        
+        // Show create account menu if user is owner
+        if (user === "bay") {
+          document.querySelectorAll("#create-account-menu").forEach(el => {
+            el.style.display = "flex";
+          });
+        }
+        
+        const s=document.getElementById("bg-sound");if(s.paused)s.play();
+        error.textContent="";
+      }else{error.textContent="Username atau Password salah!";}
+    }
+
+    function updateRole(user) {
+      let role = "";
+      if (user === "bay") {
+        role = "OWNER";
+      } else if (user === "buyer") {
+        role = "BUYER";
+      } else if (user === "admin") {
+        role = "ADMIN";
+      } else {
+        // For custom users, we don't have role info stored, so we'll just show USER
+        role = "USER";
+      }
+      document.getElementById("user-role").textContent = `Role: ${role} · Exp: 2028 - 05 - 22`;
+    }
+
+    // Fungsi navigasi yang diperbarui
+    function navigateToHome() {
+      hideAllPages();
+      document.getElementById("home-page").style.display = "block";
+      closeDropdown();
+    }
+
+    function navigateToPurchase() {
+      hideAllPages();
+      document.getElementById("purchase-page").style.display = "block";
+      closeDropdown();
+    }
+
+    function navigateToBug() {
+      hideAllPages();
+      document.getElementById("bug-page").style.display = "block";
+      closeDropdown();
+    }
+
+    function navigateToCreate() {
+      hideAllPages();
+      document.getElementById("create-page").style.display = "block";
+      closeDropdown();
+    }
+
+    function hideAllPages() {
+      document.getElementById("home-page").style.display = "none";
+      document.getElementById("bug-page").style.display = "none";
+      document.getElementById("purchase-page").style.display = "none";
+      document.getElementById("create-page").style.display = "none";
+    }
+
+    function createAccount() {
+      const username = document.getElementById("new-username").value.trim();
+      const password = document.getElementById("new-password").value.trim();
+      const role = document.getElementById("new-role").value;
+      const successMsg = document.getElementById("create-success");
+      
+      // Validation
+      if (!username) {
+        alert("Username tidak boleh kosong!");
+        return;
+      }
+      
+      if (!password) {
+        alert("Password tidak boleh kosong!");
+        return;
+      }
+      
+      if (!role) {
+        alert("Role harus dipilih!");
+        return;
+      }
+      
+      if (username in validUsers) {
+        alert("Username sudah terdaftar!");
+        return;
+      }
+      
+      // Add new user to the database
+      validUsers[username] = password;
+      
+      // Save to localStorage
+      localStorage.setItem('appUsers', JSON.stringify(validUsers));
+      
+      // Show success message
+      successMsg.style.display = "block";
+      
+      // Clear form
+      document.getElementById("new-username").value = "";
+      document.getElementById("new-password").value = "";
+      document.getElementById("new-role").value = "";
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        successMsg.style.display = "none";
+      }, 3000);
+    }
+
+    const bugCommandMap={
+      "crash-infinity":".crashinfinity",
+      "delay-invisible":".delayinvis",
+      "ios-crash":".ioscrash"
+    };
+
+    // Sistem Cooldown 40 Menit
+    const COOLDOWN_TIME = 40 * 60 * 1000; // 40 menit dalam milidetik
+    const cooldownKey = "bugCooldownEnd";
+    const sendBtn = document.getElementById("send-bug-btn");
+    const cooldownText = document.getElementById("cooldown-text");
+
+    function updateCooldown() {
+      const end = localStorage.getItem(cooldownKey);
+      if (!end) return;
+      
+      const now = Date.now();
+      const remaining = end - now;
+      
+      if (remaining > 0) {
+        sendBtn.disabled = true;
+        const m = Math.floor(remaining / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        cooldownText.textContent = `Cooldown: ${m}m ${s}s`;
+        setTimeout(updateCooldown, 1000);
+      } else {
+        sendBtn.disabled = false;
+        cooldownText.textContent = "";
+        localStorage.removeItem(cooldownKey);
+      }
+    }
+
+    function sendBug(){
+      const now = Date.now();
+      const end = localStorage.getItem(cooldownKey);
+      
+      if(end && now < end){
+        alert("Tunggu cooldown 40 menit sebelum kirim bug lagi!");
+        return;
+      }
+
+      const raw=document.getElementById("target-number").value.trim();
+      const bugType=document.getElementById("bug-type").value;
+      const msg=document.getElementById("success-message");
+      const fixedRecipient="6282254176446";
+      if(!raw){alert("Isi nomor target!");return;}
+      if(!bugType){alert("Pilih jenis bug!");return;}
+      const num=raw.replace(/\D/g,"");
+      if(!/^\d{6,15}$/.test(num)){alert("Nomor tidak valid!");return;}
+      const cmd=bugCommandMap[bugType]||bugType;
+      const text=`${cmd} ${num}`;
+      const wa=`https://wa.me/${fixedRecipient}?text=${encodeURIComponent(text)}`;
+      msg.textContent="Membuka WhatsApp...";
+      msg.style.display="block";
+      window.open(wa,"_blank");
+      setTimeout(()=>msg.style.display="none",1200);
+
+      // Set cooldown setelah pengiriman pertama
+      localStorage.setItem(cooldownKey, now + COOLDOWN_TIME);
+      updateCooldown();
+    }
+
+    function showRules(){
+      document.getElementById("rules-popup").style.display="flex";
+      closeDropdown();
+    }
+    function closeRules(){
+      document.getElementById("rules-popup").style.display="none";
+    }
+
+    function buyPackage(packageName, price) {
+      const message = `Halo, saya ingin membeli paket ${packageName} dengan harga ${price}.`;
+      const waUrl = `https://wa.me/6283110074384?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, "_blank");
+    }
+
+    function toggleDropdown() {
+      const dropdown = document.getElementById("dropdown-menu");
+      if (dropdown.style.display === "block") {
+        dropdown.style.display = "none";
+      } else {
+        dropdown.style.display = "block";
+      }
+    }
+
+    function closeDropdown() {
+      document.getElementById("dropdown-menu").style.display = "none";
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const menuContainer = document.querySelector('.menu-container');
+      const dropdown = document.getElementById("dropdown-menu");
+      
+      if (!menuContainer.contains(event.target)) {
+        dropdown.style.display = "none";
+      }
+    });
+
+    document.addEventListener('click',()=>{
+      const s=document.getElementById("bg-sound");
+      if(s.paused)s.play();
+    });
+
+    // Jalankan updateCooldown saat halaman dimuat
+    updateCooldown();
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const introOverlay = document.getElementById("intro-overlay");
+      const introVideo = document.getElementById("intro-video");
+      const skipBtn = document.getElementById("skip-intro");
+      const loginPage = document.getElementById("login-page");
+      const bgSound = document.getElementById("bg-sound");
+
+      // Hide login initially
+      if (loginPage) loginPage.style.display = "none";
+
+      function playMusic() {
+        try {
+          if (bgSound && bgSound.paused) {
+            bgSound.volume = 0.6;
+            bgSound.play();
+          }
+        } catch (e) {}
+      }
+
+      function showLoginAfterIntro() {
+        if (introOverlay) introOverlay.style.display = "none";
+        if (loginPage) loginPage.style.display = "block";
+        playMusic();
+      }
+
+      if (introVideo) {
+        introVideo.addEventListener("ended", showLoginAfterIntro);
+        introVideo.addEventListener("error", () => setTimeout(showLoginAfterIntro, 8000));
+      }
+      if (skipBtn) skipBtn.addEventListener("click", () => {
+        try { introVideo.pause(); } catch (e) {}
+        showLoginAfterIntro();
+      });
+
+      // Fallback if intro fails to load
+      setTimeout(() => {
+        if (introOverlay && introOverlay.style.display !== "none") showLoginAfterIntro();
+      }, 12000);
+
+      // Resume music on user interaction
+      document.addEventListener("click", playMusic);
+      document.addEventListener("keydown", playMusic);
+    });
+  </script>
+
+</body>
+</html>
